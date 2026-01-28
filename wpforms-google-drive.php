@@ -3,7 +3,7 @@
  * Plugin Name: WPForms Google Drive Integration
  * Plugin URI: https://github.com/fabiodalez-dev/wpforms-drive
  * Description: Integrazione tra WPForms e Google Drive per caricare file e dati delle submission su Google Drive con organizzazione automatica in cartelle.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Fabio D'Alessandro
  * Author URI: https://github.com/fabiodalez-dev
  * License: GPL v2 or later
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Definizione costanti
-define('WPFORMS_GDRIVE_VERSION', '1.0.0');
+define('WPFORMS_GDRIVE_VERSION', '1.0.1');
 define('WPFORMS_GDRIVE_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPFORMS_GDRIVE_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPFORMS_GDRIVE_PLUGIN_FILE', __FILE__);

@@ -8,8 +8,9 @@ Plugin WordPress che integra WPForms con Google Drive per caricare automaticamen
 - **Organizzazione automatica** - Ogni submission viene salvata in una cartella dedicata
 - **Dati del form** - Il contenuto del form viene salvato come file di testo nella stessa cartella
 - **Autenticazione OAuth2** - Connessione sicura tramite OAuth2 di Google
-- **File di grandi dimensioni** - Supporto per upload di file di grandi dimensioni
+- **File di grandi dimensioni** - Supporto per upload di file di grandi dimensioni con chunking automatico
 - **Interfaccia admin** - Pagina di amministrazione per configurare facilmente la connessione
+- **Conforme alle specifiche WPForms** - Sviluppato seguendo la [documentazione ufficiale WPForms](https://wpforms.com/developers/)
 
 ## Requisiti
 
@@ -95,6 +96,41 @@ wpforms-drive/
 ├── composer.json
 └── README.md
 ```
+
+### Integrazione Tecnica con WPForms
+
+Il plugin si integra con WPForms utilizzando gli hook e le API ufficiali:
+
+#### Hook Utilizzati
+
+- **`wpforms_process_complete`** - Hook principale che si attiva dopo una submission riuscita
+  - Riceve: `$fields`, `$entry`, `$form_data`, `$entry_id`
+  - Documentazione: [wpforms_process_complete](https://wpforms.com/developers/wpforms_process_complete/)
+
+#### Gestione File Upload
+
+Secondo la [documentazione WPForms](https://wpforms.com/docs/a-complete-guide-to-the-file-upload-field/):
+- I file sono in `$fields[field_id]['value']` come stringa URL
+- File multipli sono separati da newline (`\n`)
+- Il plugin converte automaticamente URL in percorsi filesystem
+
+#### Salvataggio Metadati
+
+Il plugin salva i metadati delle submission in due modi:
+1. Tabella `wp_wpforms_entry_meta` (metodo principale)
+2. Opzioni WordPress (fallback)
+
+Metadati salvati:
+- `google_drive_folder_url` - URL della cartella Drive
+- `google_drive_uploaded_at` - Timestamp upload
+- `google_drive_files_count` - Numero file caricati
+- `google_drive_files` - Array con dettagli file
+
+#### Riferimenti
+
+- [WPForms Developer Documentation](https://wpforms.com/developers/)
+- [Custom Integrations Guide](https://www.billerickson.net/contact-form-integration/)
+- [File Upload Field Documentation](https://wpforms.com/docs/a-complete-guide-to-the-file-upload-field/)
 
 ## Sicurezza
 

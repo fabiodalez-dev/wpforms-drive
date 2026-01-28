@@ -197,13 +197,22 @@ class WPForms_GDrive_Handler {
                 if (is_array($field['value'])) {
                     return '  - ' . implode("\n  - ", array_filter($field['value']));
                 }
+
+                // Per i campi file upload, formatta gli URL in modo leggibile
+                if (isset($field['type']) && $field['type'] === 'file-upload') {
+                    $file_urls = explode("\n", trim($field['value']));
+                    if (count($file_urls) > 1) {
+                        return "  - " . implode("\n  - ", array_map('trim', $file_urls));
+                    }
+                }
+
                 return $field['value'];
             }
 
             // Altrimenti formatta l'array
             $values = array();
             foreach ($field as $key => $value) {
-                if (!is_numeric($key) && !in_array($key, array('type', 'id'))) {
+                if (!is_numeric($key) && !in_array($key, array('type', 'id', 'name'))) {
                     $values[] = ucfirst($key) . ': ' . $value;
                 } elseif (is_numeric($key)) {
                     $values[] = $value;
@@ -258,6 +267,10 @@ class WPForms_GDrive_Handler {
 
     /**
      * Ottiene i percorsi dei file da un campo
+     *
+     * Secondo la documentazione WPForms, i file upload sono salvati come:
+     * - Stringa singola con URL per un file
+     * - Più URL separati da newline (\n) per file multipli
      */
     private function get_field_files($field) {
         $files = array();
@@ -266,39 +279,87 @@ class WPForms_GDrive_Handler {
             return $files;
         }
 
-        // Se è una stringa singola
-        if (is_string($field)) {
-            $files[] = $field;
+        // Il valore del campo è sempre in $field['value']
+        if (!isset($field['value']) || empty($field['value'])) {
             return $files;
         }
 
-        // Se ha una chiave 'value'
-        if (isset($field['value'])) {
-            if (is_string($field['value'])) {
-                $files[] = $field['value'];
-            } elseif (is_array($field['value'])) {
-                foreach ($field['value'] as $file) {
-                    if (is_string($file)) {
-                        $files[] = $file;
-                    }
-                }
-            }
-        }
+        $value = $field['value'];
 
-        // Cerca anche nella chiave 'file'
-        if (isset($field['file'])) {
-            if (is_string($field['file'])) {
-                $files[] = $field['file'];
-            } elseif (is_array($field['file'])) {
-                foreach ($field['file'] as $file) {
-                    if (is_string($file)) {
-                        $files[] = $file;
-                    }
+        // Se è una stringa, potrebbe contenere uno o più URL separati da newline
+        if (is_string($value)) {
+            // Separa gli URL per newline (per file multipli)
+            $file_urls = explode("\n", trim($value));
+
+            foreach ($file_urls as $url) {
+                $url = trim($url);
+                if (empty($url)) {
+                    continue;
+                }
+
+                // Converte l'URL in percorso filesystem
+                $file_path = $this->url_to_path($url);
+
+                if ($file_path && file_exists($file_path)) {
+                    $files[] = $file_path;
+                } else {
+                    error_log('WPForms Google Drive - File non trovato: ' . $url . ' (Path: ' . $file_path . ')');
                 }
             }
         }
 
         return $files;
+    }
+
+    /**
+     * Converte un URL di file in percorso filesystem
+     *
+     * @param string $url URL del file
+     * @return string|false Percorso del file o false se non valido
+     */
+    private function url_to_path($url) {
+        // Se è già un percorso filesystem, ritorna così com'è
+        if (file_exists($url)) {
+            return $url;
+        }
+
+        // Rimuove il dominio per ottenere il percorso relativo
+        $site_url = site_url();
+        $upload_dir = wp_upload_dir();
+
+        // Se l'URL inizia con il site URL, rimuovilo
+        if (strpos($url, $site_url) === 0) {
+            $relative_path = str_replace($site_url, '', $url);
+        } else {
+            // Prova a estrarre il percorso dall'URL
+            $parsed_url = parse_url($url);
+            $relative_path = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+        }
+
+        // Rimuove lo slash iniziale
+        $relative_path = ltrim($relative_path, '/');
+
+        // Prova diversi percorsi possibili
+        $possible_paths = array(
+            // Percorso completo da ABSPATH
+            ABSPATH . $relative_path,
+            // Percorso nella cartella uploads
+            $upload_dir['basedir'] . '/' . basename($url),
+            // Percorso relativo a wp-content
+            WP_CONTENT_DIR . '/' . $relative_path,
+            // Se l'URL contiene wp-content, prende tutto dopo
+            WP_CONTENT_DIR . '/' . substr($relative_path, strpos($relative_path, 'wp-content/') + 11)
+        );
+
+        // Prova ogni percorso
+        foreach ($possible_paths as $path) {
+            if (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        // Se nessun percorso funziona, ritorna false
+        return false;
     }
 
     /**
@@ -315,26 +376,36 @@ class WPForms_GDrive_Handler {
             'google_drive_files' => $uploaded_files
         );
 
-        // Salva i metadati
+        // Verifica se la tabella wpforms_entry_meta esiste
         $table_name = $wpdb->prefix . 'wpforms_entry_meta';
+        $table_exists = $wpdb->get_var($wpdb->prepare(
+            "SHOW TABLES LIKE %s",
+            $table_name
+        )) === $table_name;
 
-        foreach ($metadata as $meta_key => $meta_value) {
-            // Verifica se la tabella esiste
-            if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name) {
-                $wpdb->insert(
+        if ($table_exists) {
+            // Usa wpdb per inserire i metadati nella tabella WPForms
+            foreach ($metadata as $meta_key => $meta_value) {
+                $result = $wpdb->insert(
                     $table_name,
                     array(
                         'entry_id' => $entry_id,
                         'meta_key' => $meta_key,
-                        'meta_value' => is_array($meta_value) ? json_encode($meta_value) : $meta_value
+                        'meta_value' => is_array($meta_value) ? wp_json_encode($meta_value) : $meta_value
                     ),
                     array('%d', '%s', '%s')
                 );
+
+                if ($result === false) {
+                    error_log('WPForms Google Drive - Errore salvataggio metadata: ' . $wpdb->last_error);
+                }
             }
+        } else {
+            error_log('WPForms Google Drive - Tabella wpforms_entry_meta non trovata');
         }
 
-        // Salva anche come opzione di backup
-        update_option('wpforms_gdrive_entry_' . $entry_id, $metadata);
+        // Salva anche come opzione WordPress di backup per facile recupero
+        update_option('wpforms_gdrive_entry_' . $entry_id, $metadata, false);
     }
 
     /**
@@ -350,6 +421,21 @@ class WPForms_GDrive_Handler {
      * Ottiene l'URL della cartella Google Drive per un'entry
      */
     public function get_entry_drive_url($entry_id) {
+        global $wpdb;
+
+        // Prova prima dalla tabella wpforms_entry_meta
+        $table_name = $wpdb->prefix . 'wpforms_entry_meta';
+        $url = $wpdb->get_var($wpdb->prepare(
+            "SELECT meta_value FROM {$table_name} WHERE entry_id = %d AND meta_key = %s",
+            $entry_id,
+            'google_drive_folder_url'
+        ));
+
+        if ($url) {
+            return $url;
+        }
+
+        // Fallback: prova dalle opzioni WordPress
         $metadata = get_option('wpforms_gdrive_entry_' . $entry_id);
 
         if ($metadata && isset($metadata['google_drive_folder_url'])) {
