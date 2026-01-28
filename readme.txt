@@ -8,155 +8,168 @@ Requires PHP: 7.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Integra WPForms con Google Drive per caricare automaticamente file e submission su Google Drive.
+Integrates WPForms with Google Drive to automatically upload files and submissions to Google Drive.
 
 == Description ==
 
-WPForms Google Drive Integration è un plugin che permette di integrare facilmente WPForms con Google Drive, caricando automaticamente tutti i file e i dati delle submission su Google Drive in cartelle organizzate.
+WPForms Google Drive Integration is a plugin that seamlessly connects WPForms with Google Drive, automatically uploading all files and form submission data to Google Drive in organized folders.
 
-= Caratteristiche Principali =
+= About =
 
-* **Upload Automatico** - I file caricati tramite WPForms vengono automaticamente salvati su Google Drive
-* **Organizzazione Automatica** - Ogni submission viene salvata in una cartella dedicata con nome descrittivo
-* **Dati del Form** - Il contenuto completo del form viene salvato come file di testo nella cartella
-* **Autenticazione OAuth2** - Connessione sicura tramite OAuth2 di Google
-* **File di Grandi Dimensioni** - Supporto per upload di file di grandi dimensioni con chunking automatico
-* **Interfaccia Admin Intuitiva** - Pagina di amministrazione semplice per configurare la connessione
-* **Link Diretti** - Accesso rapido alle cartelle Google Drive dalla lista entries di WPForms
+This plugin is designed for businesses and organizations that need to:
+* Archive form submissions securely in the cloud
+* Automatically backup uploaded documents
+* Access form data from anywhere via Google Drive
 
-= Come Funziona =
+The plugin uses Google's official OAuth2 authentication, ensuring secure access without storing passwords.
 
-Quando un utente invia un form WPForms:
+= Key Features =
 
-1. Il plugin crea automaticamente una cartella su Google Drive
-2. Carica tutti i file allegati nella cartella
-3. Crea un file di testo con tutti i dati del form
-4. Salva il link alla cartella nei metadati della submission
+* **Automatic Upload** - Files submitted through WPForms are automatically saved to Google Drive
+* **Automatic Organization** - Each submission is saved in a dedicated folder with a descriptive name
+* **Form Data Export** - Complete form content is saved as a text file in the folder
+* **OAuth2 Authentication** - Secure connection via Google OAuth2
+* **Large File Support** - Support for large file uploads with automatic chunking
+* **Intuitive Admin Interface** - Simple administration page to configure the connection
+* **Direct Links** - Quick access to Google Drive folders from the WPForms entries list
 
-= Struttura Cartelle =
+= How It Works =
+
+When a user submits a WPForms form:
+
+1. The plugin automatically creates a folder on Google Drive
+2. Uploads all attached files to the folder
+3. Creates a text file with all form data
+4. Saves the folder link in the submission metadata
+
+= Folder Structure =
 
 ```
 Google Drive
 └── WPForms Submissions
-    ├── Form_Contatti_2026-01-28_123/
-    │   ├── documento.pdf
-    │   ├── foto.jpg
+    ├── Form_Contact_2026-01-28_123/
+    │   ├── document.pdf
+    │   ├── photo.jpg
     │   └── form-data.txt
-    └── Form_Iscrizioni_2026-01-28_124/
+    └── Form_Registration_2026-01-28_124/
         ├── cv.pdf
         └── form-data.txt
 ```
 
-= Requisiti =
+= Requirements =
 
-* WordPress 5.8 o superiore
-* PHP 7.4 o superiore
-* WPForms (gratuito o Pro)
-* Account Google con accesso a Google Drive
-* Composer (per installare le dipendenze)
+* WordPress 5.8 or higher
+* PHP 7.4 or higher
+* WPForms (Lite or Pro)
+* Google account with Google Drive access
+* Composer (to install dependencies)
 
 == Installation ==
 
-= Installazione Automatica =
+= Automatic Installation =
 
-1. Scarica il plugin dalla repository o da GitHub
-2. Carica il file zip tramite il pannello WordPress > Plugin > Aggiungi nuovo
-3. Attiva il plugin
+1. Download the plugin from the repository or GitHub
+2. Upload the zip file via WordPress > Plugins > Add New
+3. Activate the plugin
 
-= Installazione Manuale =
+= Manual Installation =
 
-1. Scarica o clona il repository nella cartella `wp-content/plugins/`
-2. Naviga nella cartella del plugin: `cd wp-content/plugins/wpforms-drive`
-3. Installa le dipendenze con Composer: `composer install`
-4. Attiva il plugin dal pannello WordPress
+1. Download or clone the repository to `wp-content/plugins/`
+2. Navigate to the plugin folder: `cd wp-content/plugins/wpforms-drive`
+3. Install dependencies with Composer: `composer install`
+4. Activate the plugin from WordPress dashboard
 
-= Configurazione Google Cloud =
+= Google Cloud Configuration =
 
-1. Vai su [Google Cloud Console](https://console.cloud.google.com/)
-2. Crea un nuovo progetto o selezionane uno esistente
-3. Abilita la **Google Drive API**
-4. Vai su **Credenziali** e crea credenziali OAuth 2.0
-5. Configura gli URL di reindirizzamento autorizzati (disponibile nelle impostazioni del plugin)
-6. Copia Client ID e Client Secret
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the **Google Drive API**
+4. Go to **Credentials** and create OAuth 2.0 credentials
+5. Configure authorized redirect URIs (available in plugin settings)
+6. Copy Client ID and Client Secret
 
-= Configurazione Plugin =
+= Plugin Configuration =
 
-1. Vai su **WPForms > Google Drive**
-2. Inserisci il **Client ID** e il **Client Secret**
-3. Clicca su **Salva Impostazioni**
-4. Clicca su **Connetti a Google Drive**
-5. Autorizza l'applicazione tramite Google
-6. Abilita l'integrazione
+1. Go to **WPForms > Google Drive**
+2. Enter the **Client ID** and **Client Secret**
+3. Click **Save Settings**
+4. Click **Connect to Google Drive**
+5. Authorize the application via Google
+6. Enable the integration
 
 == Frequently Asked Questions ==
 
-= Il plugin funziona con WPForms Lite? =
+= Does the plugin work with WPForms Lite? =
 
-Sì, il plugin funziona sia con WPForms Lite che con WPForms Pro.
+Yes, the plugin works with both WPForms Lite and WPForms Pro.
 
-= I file vengono eliminati da WordPress? =
+= Are files deleted from WordPress? =
 
-No, i file rimangono sul server WordPress. Il plugin crea solo una copia su Google Drive.
+No, files remain on the WordPress server. The plugin only creates a copy on Google Drive.
 
-= Posso scegliere in quale cartella salvare i file? =
+= Can I choose which folder to save files to? =
 
-Sì, puoi specificare una cartella radice su Google Drive nelle impostazioni del plugin.
+Yes, you can specify a root folder on Google Drive in the plugin settings.
 
-= Cosa succede se la connessione a Google Drive fallisce? =
+= What happens if the Google Drive connection fails? =
 
-La submission viene comunque salvata su WordPress normalmente. L'upload su Google Drive viene gestito in background e non blocca il processo del form.
+The submission is still saved on WordPress normally. The Google Drive upload is handled in the background and does not block the form process.
 
-= Il plugin supporta file di grandi dimensioni? =
+= Does the plugin support large files? =
 
-Sì, il plugin utilizza il chunking automatico per caricare file di grandi dimensioni su Google Drive.
+Yes, the plugin uses automatic chunking to upload large files to Google Drive.
 
-= Come posso vedere le cartelle su Google Drive? =
+= How can I view folders on Google Drive? =
 
-Nella lista entries di WPForms troverai una colonna "Google Drive" con un pulsante "Apri su Drive" per ogni submission caricata.
+In the WPForms entries list, you'll find a "Google Drive" column with an "Open in Drive" button for each uploaded submission.
 
 == Screenshots ==
 
-1. Pagina di impostazioni del plugin
-2. Stato della connessione a Google Drive
-3. Colonna Google Drive nella lista entries di WPForms
-4. Esempio di cartella su Google Drive
-5. Contenuto del file form-data.txt
+1. Plugin settings page
+2. Google Drive connection status
+3. Google Drive column in WPForms entries list
+4. Example folder on Google Drive
+5. Contents of form-data.txt file
 
 == Changelog ==
 
 = 1.0.1 =
-* Correzione bug: variabile non definita nel template settings
-* Miglioramento JS: funzione copia negli appunti più robusta
-* Aggiornamento licenza a GPL v3
-* Ottimizzazione composer.json
+* Fixed: Undefined variable in settings template
+* Improved: Copy to clipboard function (JS)
+* Updated: License to GPL v3
+* Optimized: composer.json configuration
+* Removed: Unused PSR-4 namespace
 
 = 1.0.0 =
-* Prima release
-* Integrazione completa con WPForms
-* Autenticazione OAuth2
-* Upload automatico file
-* Creazione automatica cartelle
-* Salvataggio dati form
+* Initial release
+* Full WPForms integration
+* OAuth2 authentication
+* Automatic file upload
+* Automatic folder creation
+* Form data export
 
 == Upgrade Notice ==
 
+= 1.0.1 =
+Bug fixes and improvements. Recommended update for all users.
+
 = 1.0.0 =
-Prima release del plugin.
+Initial plugin release.
 
 == Privacy Policy ==
 
-Questo plugin:
-* Non raccoglie dati degli utenti
-* Non invia dati a servizi esterni eccetto Google Drive (previo consenso)
-* Memorizza i token OAuth in modo sicuro nel database WordPress
-* Non utilizza cookie o tracking
+This plugin:
+* Does not collect user data
+* Does not send data to external services except Google Drive (with user consent)
+* Stores OAuth tokens securely in the WordPress database
+* Does not use cookies or tracking
 
 == Credits ==
 
-Sviluppato da Fabio D'Alessandro
-Repository GitHub: https://github.com/fabiodalez-dev/wpforms-drive
+Developed by Fabio D'Alessandro
+GitHub Repository: https://github.com/fabiodalez-dev/wpforms-drive
 
 == Support ==
 
-Per supporto o segnalazione bug, apri una issue su GitHub:
+For support or bug reports, open an issue on GitHub:
 https://github.com/fabiodalez-dev/wpforms-drive/issues
