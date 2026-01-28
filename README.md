@@ -45,15 +45,75 @@ The plugin uses Google's official OAuth2 authentication, ensuring secure access 
 
 ## Google Cloud Configuration
 
+Follow these steps to obtain your Google Cloud credentials:
+
+### Step 1: Create a Google Cloud Project
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Enable the **Google Drive API**
-4. Go to **Credentials** and create OAuth 2.0 credentials
-5. Configure authorized redirect URIs:
+2. Click on the project dropdown at the top of the page
+3. Click **New Project**
+4. Enter a project name (e.g., "WPForms Drive Integration")
+5. Click **Create**
+6. Wait for the project to be created and make sure it's selected
+
+### Step 2: Enable Google Drive API
+
+1. In the left sidebar, go to **APIs & Services > Library**
+2. Search for "Google Drive API"
+3. Click on **Google Drive API**
+4. Click the **Enable** button
+5. Wait for the API to be enabled
+
+### Step 3: Configure OAuth Consent Screen
+
+1. In the left sidebar, go to **APIs & Services > OAuth consent screen**
+2. Select **External** (unless you have a Google Workspace account)
+3. Click **Create**
+4. Fill in the required fields:
+   - **App name**: WPForms Google Drive Integration
+   - **User support email**: Your email address
+   - **Developer contact information**: Your email address
+5. Click **Save and Continue**
+6. On the **Scopes** page, click **Add or Remove Scopes**
+7. Search for and select:
+   - `https://www.googleapis.com/auth/drive.file`
+   - `https://www.googleapis.com/auth/drive`
+8. Click **Update**, then **Save and Continue**
+9. On the **Test users** page, click **Add Users**
+10. Add your Google email address
+11. Click **Save and Continue**
+
+### Step 4: Create OAuth 2.0 Credentials
+
+1. In the left sidebar, go to **APIs & Services > Credentials**
+2. Click **+ Create Credentials** at the top
+3. Select **OAuth client ID**
+4. For **Application type**, select **Web application**
+5. Enter a name (e.g., "WPForms Plugin")
+6. Under **Authorized redirect URIs**, click **+ Add URI**
+7. Enter your redirect URI (copy from plugin settings page):
    ```
    https://your-site.com/wp-admin/admin.php?page=wpforms-google-drive
    ```
-6. Copy Client ID and Client Secret to the plugin settings
+   > **Important**: Replace `your-site.com` with your actual domain. The exact URL is shown in the plugin settings page.
+8. Click **Create**
+
+### Step 5: Copy Your Credentials
+
+After creating the OAuth client, a popup will display your credentials:
+
+- **Client ID**: Looks like `123456789-abcdefg.apps.googleusercontent.com`
+- **Client Secret**: A string of random characters
+
+> **Important**: Copy these values immediately! You can also access them later by clicking on your OAuth client in the Credentials list.
+
+### Troubleshooting
+
+| Error | Solution |
+|-------|----------|
+| "Access blocked: App not verified" | Add your email as a test user in OAuth consent screen |
+| "redirect_uri_mismatch" | Make sure the redirect URI in Google Cloud matches exactly the one shown in plugin settings |
+| "invalid_client" | Double-check your Client ID and Client Secret |
 
 ## Plugin Configuration
 
