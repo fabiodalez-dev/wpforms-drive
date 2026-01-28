@@ -2,8 +2,8 @@
 /**
  * Plugin Name: WPForms Google Drive Integration
  * Plugin URI: https://github.com/fabiodalez-dev/wpforms-drive
- * Description: Integrazione tra WPForms e Google Drive per caricare file e dati delle submission su Google Drive con organizzazione automatica in cartelle.
- * Version: 1.0.1
+ * Description: Integrates WPForms with Google Drive to automatically upload files and submission data with automatic folder organization.
+ * Version: 1.0.2
  * Author: Fabio D'Alessandro
  * Author URI: https://github.com/fabiodalez-dev
  * License: GPL v3 or later
@@ -14,44 +14,67 @@
  * Requires PHP: 7.4
  */
 
-// Impedisce l'accesso diretto
+// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// Definizione costanti
-define('WPFORMS_GDRIVE_VERSION', '1.0.1');
+// Define constants
+define('WPFORMS_GDRIVE_VERSION', '1.0.2');
 define('WPFORMS_GDRIVE_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPFORMS_GDRIVE_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPFORMS_GDRIVE_PLUGIN_FILE', __FILE__);
 
 /**
- * Classe principale del plugin
+ * Debug logger function
+ */
+function wpforms_gdrive_log($message, $data = null) {
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        $log_message = '[WPForms GDrive] ' . $message;
+        if ($data !== null) {
+            $log_message .= ' | Data: ' . print_r($data, true);
+        }
+        error_log($log_message);
+    }
+}
+
+/**
+ * Main plugin class
  */
 class WPForms_Google_Drive {
 
     /**
-     * Istanza singleton
+     * Singleton instance
      */
     private static $instance = null;
 
     /**
-     * Gestore Google Drive
+     * Google Drive manager
      */
     public $google_drive = null;
 
     /**
-     * Gestore Admin
+     * Admin manager
      */
     public $admin = null;
 
     /**
-     * Gestore WPForms
+     * WPForms handler
      */
     public $wpforms_handler = null;
 
     /**
-     * Ottiene l'istanza singleton
+     * Dependencies loaded flag
+     */
+    private $dependencies_loaded = false;
+
+    /**
+     * Error messages
+     */
+    private $errors = array();
+
+    /**
+     * Get singleton instance
      */
     public static function get_instance() {
         if (null === self::$instance) {
@@ -61,67 +84,162 @@ class WPForms_Google_Drive {
     }
 
     /**
-     * Costruttore
+     * Constructor
      */
     private function __construct() {
-        // Carica l'autoloader di Composer
+        // Load dependencies
         $this->load_dependencies();
 
-        // Inizializza il plugin
-        add_action('plugins_loaded', array($this, 'init'));
+        // Initialize plugin
+        add_action('plugins_loaded', array($this, 'init'), 20);
 
-        // Hook di attivazione e disattivazione
+        // Activation and deactivation hooks
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_deactivation_hook(__FILE__, array($this, 'deactivate'));
+
+        // Admin notices for errors
+        add_action('admin_notices', array($this, 'display_admin_notices'));
     }
 
     /**
-     * Carica le dipendenze
+     * Load dependencies
      */
     private function load_dependencies() {
-        // Autoloader Composer
-        if (file_exists(WPFORMS_GDRIVE_PLUGIN_DIR . 'vendor/autoload.php')) {
-            require_once WPFORMS_GDRIVE_PLUGIN_DIR . 'vendor/autoload.php';
-        }
+        wpforms_gdrive_log('Loading dependencies...');
 
-        // Carica le classi del plugin
-        require_once WPFORMS_GDRIVE_PLUGIN_DIR . 'classes/class-google-drive-manager.php';
-        require_once WPFORMS_GDRIVE_PLUGIN_DIR . 'classes/class-wpforms-handler.php';
-        require_once WPFORMS_GDRIVE_PLUGIN_DIR . 'classes/class-admin.php';
-    }
+        // Check for Composer autoloader
+        $autoloader = WPFORMS_GDRIVE_PLUGIN_DIR . 'vendor/autoload.php';
 
-    /**
-     * Inizializza il plugin
-     */
-    public function init() {
-        // Verifica che WPForms sia attivo
-        if (!$this->is_wpforms_active()) {
-            add_action('admin_notices', array($this, 'wpforms_missing_notice'));
+        if (!file_exists($autoloader)) {
+            $this->errors[] = sprintf(
+                __('WPForms Google Drive: Composer dependencies not installed. Please run <code>composer install</code> in the plugin directory: %s', 'wpforms-google-drive'),
+                WPFORMS_GDRIVE_PLUGIN_DIR
+            );
+            wpforms_gdrive_log('ERROR: vendor/autoload.php not found at: ' . $autoloader);
             return;
         }
 
-        // Carica la traduzione
+        try {
+            require_once $autoloader;
+            wpforms_gdrive_log('Composer autoloader loaded successfully');
+        } catch (Exception $e) {
+            $this->errors[] = __('WPForms Google Drive: Error loading Composer autoloader: ', 'wpforms-google-drive') . $e->getMessage();
+            wpforms_gdrive_log('ERROR loading autoloader: ' . $e->getMessage());
+            return;
+        }
+
+        // Check if Google Client class exists
+        if (!class_exists('Google_Client')) {
+            $this->errors[] = __('WPForms Google Drive: Google API Client library not found. Please run <code>composer install</code>.', 'wpforms-google-drive');
+            wpforms_gdrive_log('ERROR: Google_Client class not found');
+            return;
+        }
+
+        wpforms_gdrive_log('Google_Client class found');
+
+        // Load plugin classes
+        $class_files = array(
+            'class-google-drive-manager.php',
+            'class-wpforms-handler.php',
+            'class-admin.php',
+        );
+
+        foreach ($class_files as $file) {
+            $file_path = WPFORMS_GDRIVE_PLUGIN_DIR . 'classes/' . $file;
+            if (file_exists($file_path)) {
+                require_once $file_path;
+                wpforms_gdrive_log('Loaded class file: ' . $file);
+            } else {
+                $this->errors[] = sprintf(__('WPForms Google Drive: Required file not found: %s', 'wpforms-google-drive'), $file);
+                wpforms_gdrive_log('ERROR: Class file not found: ' . $file_path);
+                return;
+            }
+        }
+
+        $this->dependencies_loaded = true;
+        wpforms_gdrive_log('All dependencies loaded successfully');
+    }
+
+    /**
+     * Initialize plugin
+     */
+    public function init() {
+        wpforms_gdrive_log('Initializing plugin...');
+
+        // Check if dependencies are loaded
+        if (!$this->dependencies_loaded) {
+            wpforms_gdrive_log('ERROR: Dependencies not loaded, aborting init');
+            return;
+        }
+
+        // Check if WPForms is active
+        if (!$this->is_wpforms_active()) {
+            add_action('admin_notices', array($this, 'wpforms_missing_notice'));
+            wpforms_gdrive_log('WPForms not active');
+            return;
+        }
+
+        wpforms_gdrive_log('WPForms is active');
+
+        // Load translations
         load_plugin_textdomain('wpforms-google-drive', false, dirname(plugin_basename(__FILE__)) . '/languages');
 
-        // Inizializza i componenti
-        $this->google_drive = new WPForms_GDrive_Manager();
-        $this->wpforms_handler = new WPForms_GDrive_Handler($this->google_drive);
+        // Initialize components with error handling
+        try {
+            wpforms_gdrive_log('Creating WPForms_GDrive_Manager...');
+            $this->google_drive = new WPForms_GDrive_Manager();
+            wpforms_gdrive_log('WPForms_GDrive_Manager created successfully');
 
-        // Inizializza l'admin solo nel backend
-        if (is_admin()) {
-            $this->admin = new WPForms_GDrive_Admin($this->google_drive);
+            wpforms_gdrive_log('Creating WPForms_GDrive_Handler...');
+            $this->wpforms_handler = new WPForms_GDrive_Handler($this->google_drive);
+            wpforms_gdrive_log('WPForms_GDrive_Handler created successfully');
+
+            // Initialize admin only in backend
+            if (is_admin()) {
+                wpforms_gdrive_log('Creating WPForms_GDrive_Admin...');
+                $this->admin = new WPForms_GDrive_Admin($this->google_drive);
+                wpforms_gdrive_log('WPForms_GDrive_Admin created successfully');
+            }
+
+            wpforms_gdrive_log('Plugin initialized successfully');
+
+        } catch (Exception $e) {
+            $this->errors[] = __('WPForms Google Drive initialization error: ', 'wpforms-google-drive') . $e->getMessage();
+            wpforms_gdrive_log('ERROR during initialization: ' . $e->getMessage());
+            wpforms_gdrive_log('Stack trace: ' . $e->getTraceAsString());
+        } catch (Error $e) {
+            $this->errors[] = __('WPForms Google Drive fatal error: ', 'wpforms-google-drive') . $e->getMessage();
+            wpforms_gdrive_log('FATAL ERROR during initialization: ' . $e->getMessage());
+            wpforms_gdrive_log('Stack trace: ' . $e->getTraceAsString());
         }
     }
 
     /**
-     * Verifica se WPForms è attivo
+     * Check if WPForms is active
      */
     private function is_wpforms_active() {
         return class_exists('WPForms');
     }
 
     /**
-     * Mostra avviso se WPForms non è installato
+     * Display admin notices for errors
+     */
+    public function display_admin_notices() {
+        if (empty($this->errors)) {
+            return;
+        }
+
+        foreach ($this->errors as $error) {
+            ?>
+            <div class="notice notice-error">
+                <p><?php echo wp_kses_post($error); ?></p>
+            </div>
+            <?php
+        }
+    }
+
+    /**
+     * WPForms missing notice
      */
     public function wpforms_missing_notice() {
         ?>
@@ -129,7 +247,7 @@ class WPForms_Google_Drive {
             <p>
                 <?php
                 echo sprintf(
-                    __('Il plugin <strong>WPForms Google Drive Integration</strong> richiede <strong>WPForms</strong> per funzionare. Per favore <a href="%s" target="_blank">installa WPForms</a>.', 'wpforms-google-drive'),
+                    __('The <strong>WPForms Google Drive Integration</strong> plugin requires <strong>WPForms</strong> to work. Please <a href="%s" target="_blank">install WPForms</a>.', 'wpforms-google-drive'),
                     'https://wordpress.org/plugins/wpforms-lite/'
                 );
                 ?>
@@ -139,10 +257,12 @@ class WPForms_Google_Drive {
     }
 
     /**
-     * Attivazione del plugin
+     * Plugin activation
      */
     public function activate() {
-        // Crea le opzioni di default
+        wpforms_gdrive_log('Activating plugin...');
+
+        // Create default options
         $default_options = array(
             'client_id' => '',
             'client_secret' => '',
@@ -157,23 +277,40 @@ class WPForms_Google_Drive {
 
         // Flush rewrite rules
         flush_rewrite_rules();
+
+        wpforms_gdrive_log('Plugin activated');
     }
 
     /**
-     * Disattivazione del plugin
+     * Plugin deactivation
      */
     public function deactivate() {
-        // Flush rewrite rules
+        wpforms_gdrive_log('Deactivating plugin...');
         flush_rewrite_rules();
+        wpforms_gdrive_log('Plugin deactivated');
+    }
+
+    /**
+     * Get errors
+     */
+    public function get_errors() {
+        return $this->errors;
+    }
+
+    /**
+     * Check if plugin is ready
+     */
+    public function is_ready() {
+        return $this->dependencies_loaded && empty($this->errors) && $this->google_drive !== null;
     }
 }
 
 /**
- * Inizializza il plugin
+ * Get plugin instance
  */
 function wpforms_google_drive() {
     return WPForms_Google_Drive::get_instance();
 }
 
-// Avvia il plugin
+// Initialize plugin
 wpforms_google_drive();

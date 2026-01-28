@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] - 2026-01-28
+
+### Added
+
+- **Debug logging system** - Added comprehensive logging for troubleshooting (enabled when WP_DEBUG is true)
+- **Error handling** - Added try-catch blocks around all initialization code
+- **Admin error notices** - Shows helpful error messages in WordPress admin when something goes wrong
+- **Dependency checks** - Validates Composer dependencies and Google API Client before loading
+
+### Fixed
+
+- **Fatal error handling** - Plugin now gracefully handles missing dependencies instead of causing critical errors
+- **Better error messages** - Clear instructions when `composer install` hasn't been run
+
+---
+
 ## [1.0.1] - 2026-01-28
 
 ### Fixed
