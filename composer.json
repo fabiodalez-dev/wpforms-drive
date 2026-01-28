@@ -1,0 +1,22 @@
+{
+    "name": "fabiodalez-dev/wpforms-google-drive",
+    "description": "Integrazione tra WPForms e Google Drive per caricare file e submission",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Fabio D'Alessandro",
+            "email": "fabio@example.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "google/apiclient": "^2.15"
+    },
+    "autoload": {
+        "psr-4": {
+            "WPFormsGDrive\\": "classes/"
+        }
+    },
+    "minimum-stability": "stable"
+}

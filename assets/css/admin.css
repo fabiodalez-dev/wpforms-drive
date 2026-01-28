@@ -1,0 +1,148 @@
+/**
+ * Stili per la pagina di amministrazione
+ */
+
+.wpforms-gdrive-settings {
+    margin-top: 20px;
+}
+
+.wpforms-gdrive-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.wpforms-gdrive-main {
+    flex: 1;
+    max-width: 800px;
+}
+
+.wpforms-gdrive-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+}
+
+.wpforms-gdrive-card {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.wpforms-gdrive-card h2,
+.wpforms-gdrive-card h3 {
+    margin-top: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.wpforms-gdrive-card h3 {
+    font-size: 16px;
+}
+
+.wpforms-gdrive-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+    text-align: center;
+}
+
+.wpforms-gdrive-status .dashicons {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 15px;
+}
+
+.wpforms-gdrive-status p {
+    font-size: 16px;
+    margin: 0 0 15px;
+    font-weight: 500;
+}
+
+.wpforms-gdrive-status-connected {
+    background: #edfaef;
+    border: 1px solid #46b450;
+    border-radius: 4px;
+}
+
+.wpforms-gdrive-status-connected .dashicons {
+    color: #46b450;
+}
+
+.wpforms-gdrive-status-disconnected {
+    background: #fff8e5;
+    border: 1px solid #ffb900;
+    border-radius: 4px;
+}
+
+.wpforms-gdrive-status-disconnected .dashicons {
+    color: #ffb900;
+}
+
+.wpforms-gdrive-card .form-table th {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.wpforms-gdrive-card .form-table td {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.wpforms-gdrive-card .description {
+    font-size: 13px;
+    color: #646970;
+    margin-top: 5px;
+}
+
+.wpforms-gdrive-card ol {
+    padding-left: 20px;
+}
+
+.wpforms-gdrive-card ol li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.wpforms-gdrive-card ol li a {
+    text-decoration: none;
+}
+
+.wpforms-gdrive-sidebar .wpforms-gdrive-card {
+    font-size: 14px;
+}
+
+.wpforms-gdrive-sidebar .wpforms-gdrive-card p {
+    margin: 10px 0;
+}
+
+.button .dashicons {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .wpforms-gdrive-container {
+        flex-direction: column;
+    }
+
+    .wpforms-gdrive-sidebar {
+        width: 100%;
+    }
+
+    .wpforms-gdrive-main {
+        max-width: 100%;
+    }
+}
+
+/* Colonna Google Drive nella lista entries */
+.wpforms-entries-table .column-google_drive {
+    width: 120px;
+    text-align: center;
+}

@@ -1,0 +1,29 @@
+# Dipendenze
+/vendor/
+/node_modules/
+
+# Composer
+composer.lock
+composer.phar
+
+# WordPress
+*.log
+.htaccess
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+/build/
+/dist/
+
+# Environment
+.env
+.env.local
