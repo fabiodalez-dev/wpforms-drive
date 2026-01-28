@@ -10,18 +10,35 @@
         $('.wpforms-gdrive-copy-button').on('click', function(e) {
             e.preventDefault();
 
-            var $input = $(this).prev('input');
+            var $button = $(this);
+            var $input = $button.prev('input');
+            var textToCopy = $input.val();
+
+            // Usa l'API moderna clipboard se disponibile
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy).then(function() {
+                    showCopyFeedback($button);
+                }).catch(function() {
+                    fallbackCopy($input, $button);
+                });
+            } else {
+                fallbackCopy($input, $button);
+            }
+        });
+
+        function fallbackCopy($input, $button) {
             $input.select();
             document.execCommand('copy');
+            showCopyFeedback($button);
+        }
 
-            // Feedback visivo
-            var originalText = $(this).text();
-            $(this).text('Copiato!');
-
+        function showCopyFeedback($button) {
+            var originalText = $button.text();
+            $button.text('Copiato!');
             setTimeout(function() {
-                $('.wpforms-gdrive-copy-button').text(originalText);
+                $button.text(originalText);
             }, 2000);
-        });
+        }
 
         // Conferma prima di disconnettere
         $('a[href*="action=disconnect"]').on('click', function(e) {

@@ -163,6 +163,7 @@ class WPForms_GDrive_Admin {
         // Ottiene le impostazioni
         $settings = $this->google_drive->get_settings();
         $is_authenticated = $this->google_drive->is_authenticated();
+        $google_drive = $this->google_drive;
 
         // Include il template
         include WPFORMS_GDRIVE_PLUGIN_DIR . 'views/admin/settings.php';

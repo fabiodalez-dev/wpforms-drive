@@ -3,10 +3,10 @@ Contributors: fabiodalez
 Tags: wpforms, google drive, forms, upload, integration
 Requires at least: 5.8
 Tested up to: 6.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 Requires PHP: 7.4
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+License: GPLv3 or later
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Integra WPForms con Google Drive per caricare automaticamente file e submission su Google Drive.
 
@@ -123,6 +123,12 @@ Nella lista entries di WPForms troverai una colonna "Google Drive" con un pulsan
 5. Contenuto del file form-data.txt
 
 == Changelog ==
+
+= 1.0.1 =
+* Correzione bug: variabile non definita nel template settings
+* Miglioramento JS: funzione copia negli appunti più robusta
+* Aggiornamento licenza a GPL v3
+* Ottimizzazione composer.json
 
 = 1.0.0 =
 * Prima release

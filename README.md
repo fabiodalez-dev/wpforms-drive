@@ -144,7 +144,7 @@ Per problemi o richieste di funzionalità, apri una issue su GitHub.
 
 ## Licenza
 
-GPL v2 or later
+GPL v3 or later - [https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## Crediti
 

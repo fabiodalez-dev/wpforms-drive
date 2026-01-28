@@ -106,7 +106,7 @@ if (!defined('ABSPATH')) {
                             </th>
                             <td>
                                 <input type="text" id="redirect_uri" value="<?php echo esc_attr($settings['redirect_uri'] ?? ''); ?>" class="regular-text" readonly>
-                                <button type="button" class="button button-secondary" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">
+                                <button type="button" class="button button-secondary wpforms-gdrive-copy-button">
                                     <?php _e('Copia', 'wpforms-google-drive'); ?>
                                 </button>
                                 <p class="description">
